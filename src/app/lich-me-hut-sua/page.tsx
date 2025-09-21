@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { useMilkPumpStore } from '@/store/MilkPumpStore';
 import dayjs from 'dayjs';
-import { CalendarIcon, Clock } from 'lucide-react';
+import { CalendarIcon, Clock, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { vi } from 'date-fns/locale';
 import { Input } from '@/components/ui/input';
@@ -37,7 +37,7 @@ import {
 export default function LichMeHutSua() {
   return (
     <div className='flex flex-col space-y-4'>
-      <MilkPumpDataTable />
+      <MilkPumpFilterTable />
       <MilkPumpForm />
     </div>
   );
@@ -159,9 +159,9 @@ function MilkPumpForm() {
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận thông tin</AlertDialogTitle>
+            <AlertDialogTitle>Con phơm</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc muốn lưu lịch hút sữa này không? <br />
+              <span className='mb-5 block'>Lưu lịch hút sữa này không?</span>
               <span className='font-medium'>
                 Ngày: {dayjs(date).format('DD-MM-YYYY')}
               </span>
@@ -172,9 +172,9 @@ function MilkPumpForm() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>Đừng</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirm} className='bg-[salmon]'>
-              Xác nhận
+              Ô cê !
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -183,15 +183,63 @@ function MilkPumpForm() {
   );
 }
 
-function MilkPumpDataTable() {
-  const invoices = [
-    { id: 'INV001', amount: 120, date: Date.now(), time: '08:30' },
-    { id: 'INV002', amount: 150, date: Date.now(), time: '14:15' },
-    { id: 'INV003', amount: 100, date: Date.now(), time: '20:00' },
-  ];
+function MilkPumpFilterTable() {
+  const entries = useMilkPumpStore((s) => s.entries);
+
+  const [open, setOpen] = useState(false);
+  const [filterDate, setFilterDate] = useState<string>(
+    dayjs().format('YYYY-MM-DD')
+  );
+
+  const parsed = filterDate
+    ? dayjs(filterDate, 'YYYY-MM-DD').toDate()
+    : undefined;
+
+  const filteredEntries = filterDate
+    ? entries.filter((e) => e.date === filterDate)
+    : entries;
+
   return (
     <div className='flex flex-col space-y-4 bg-white shadow p-4 rounded-md'>
       <h1 className='font-bold text-center'>Thống kê hút sữa</h1>
+      <div className='flex justify-between items-center'>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant='outline'
+              className='flex items-center gap-2 text-sm'
+            >
+              <CalendarIcon className='w-4 h-4' />
+              {filterDate
+                ? dayjs(filterDate).format('DD-MM-YYYY')
+                : 'Chọn ngày'}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className='p-0 w-auto' align='end'>
+            <Calendar
+              mode='single'
+              selected={parsed}
+              locale={vi}
+              onSelect={(val) => {
+                if (val) {
+                  setFilterDate(dayjs(val).format('YYYY-MM-DD'));
+                  setOpen(false);
+                }
+              }}
+            />
+          </PopoverContent>
+        </Popover>
+        <span
+          className='text-[salmon] text-sm underline cursor-pointer'
+          onClick={() => {
+            const today = dayjs().format('YYYY-MM-DD');
+            setFilterDate(today);
+          }}
+        >
+          Hôm nay
+        </span>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -199,28 +247,81 @@ function MilkPumpDataTable() {
             <TableHead>Lượng (ml)</TableHead>
             <TableHead>Giờ</TableHead>
             <TableHead className='text-right'>Ngày</TableHead>
+            <TableHead className='text-center'>Xóa</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((invoice, index) => (
-            <TableRow key={invoice.id}>
-              <TableCell className='font-medium'>{index + 1}</TableCell>
-              <TableCell>{invoice.amount}</TableCell>
-              <TableCell>{invoice.time}</TableCell>
-              <TableCell className='text-right'>
-                {dayjs(invoice.date).format('DD-MM-YYYY')}
+          {filteredEntries.length > 0 ? (
+            filteredEntries.map((entry, index) => (
+              <TableRow key={entry.id}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{entry.amount}</TableCell>
+                <TableCell>{entry.time}</TableCell>
+                <TableCell className='text-right'>
+                  {dayjs(entry.date).format('DD-MM-YYYY')}
+                </TableCell>
+                <TableCell className='text-center'>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='text-[salmon]'
+                      >
+                        <Trash2 className='w-4 h-4' />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Xóa lịch hút sữa</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          <span className='block mb-5'>Xóa lịch này?</span>
+                          <span className='font-medium'>
+                            Ngày: {dayjs(entry.date).format('DD-MM-YYYY')}
+                          </span>
+                          <br />
+                          <span className='font-medium'>Giờ: {entry.time}</span>
+                          <br />
+                          <span className='font-medium'>
+                            Số lượng: {entry.amount} ml
+                          </span>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Đừng</AlertDialogCancel>
+                        <AlertDialogAction
+                          className='bg-[salmon] text-white'
+                          onClick={() =>
+                            useMilkPumpStore.getState().removeEntry(entry.id)
+                          }
+                        >
+                          Xóa
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className='text-center text-gray-500'>
+                Không có dữ liệu
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell className='font-bold'>Tổng</TableCell>
-            <TableCell colSpan={3} className='font-bold text-right'>
-              2 lần - 370 ml
-            </TableCell>
-          </TableRow>
-        </TableFooter>
+        {filteredEntries.length > 0 && (
+          <TableFooter>
+            <TableRow>
+              <TableCell className='font-bold'>Tổng</TableCell>
+              <TableCell colSpan={4} className='font-bold text-right'>
+                {filteredEntries.length} lần –{' '}
+                {filteredEntries.reduce((acc, e) => acc + e.amount, 0)} ml
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        )}
       </Table>
     </div>
   );

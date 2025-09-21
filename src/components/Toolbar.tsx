@@ -13,6 +13,8 @@ import useClickOutside from '@/hooks/useClickOutside';
 import { Baby, Ellipsis, Milk, Utensils } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import ImportDataDialog from './ImportDataDialog';
+import ExportDataDialog from './ExportDataDialog';
 
 const transition: Transition = {
   type: 'spring',
@@ -43,7 +45,12 @@ const ITEMS = [
     id: 4,
     label: 'Menu',
     icon: <Ellipsis className='w-7 h-7' strokeWidth={1} />,
-    content: <div className='flex flex-col space-y-4'>abvc</div>,
+    content: (
+      <div className='flex flex-col space-y-4'>
+        <ImportDataDialog />
+        <ExportDataDialog />
+      </div>
+    ),
   },
 ];
 

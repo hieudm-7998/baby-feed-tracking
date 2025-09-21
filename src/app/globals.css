@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Charmonman:wght@400;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -124,7 +125,7 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-.nav-btn{
+.nav-btn {
   width: auto;
   height: 2.5rem;
   font-size: 12px;
@@ -138,4 +139,16 @@ body {
 .nav-btn.active {
   color: salmon;
   font-weight: 600;
+}
+
+.charmonman-regular {
+  font-family: 'Charmonman', cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.charmonman-bold {
+  font-family: 'Charmonman', cursive;
+  font-weight: 700;
+  font-style: normal;
 }
