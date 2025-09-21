@@ -12,16 +12,17 @@ import {
 import { Button } from '@/components/ui/button';
 import { DialogDescription } from '@radix-ui/react-dialog';
 
-export default function ExportDataDialog() {
+export function ExportDataDialog() {
   const [qr, setQr] = useState<string | null>(null);
 
   useEffect(() => {
     const milkPump = localStorage.getItem('milk-pump-storage');
     const babyFeed = localStorage.getItem('baby-feed-storage');
 
+    // Dùng đúng key storage
     const payload = {
-      milkPump: milkPump ? JSON.parse(milkPump) : null,
-      babyFeed: babyFeed ? JSON.parse(babyFeed) : null,
+      'milk-pump-storage': milkPump ? JSON.parse(milkPump) : null,
+      'baby-feed-storage': babyFeed ? JSON.parse(babyFeed) : null,
     };
 
     const jsonString = JSON.stringify(payload);

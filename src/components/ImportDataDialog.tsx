@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { DialogDescription } from '@radix-ui/react-dialog';
 
-export default function ImportDataDialog() {
+export function ImportDataDialog() {
   const [error, setError] = useState<string | null>(null);
   const [scanned, setScanned] = useState<string | null>(null);
   const [constraints, setConstraints] = useState<MediaTrackConstraints>({
@@ -20,11 +20,9 @@ export default function ImportDataDialog() {
   });
 
   useEffect(() => {
-    // Test xem browser có support environment không
     navigator.mediaDevices
       ?.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
       .catch(() => {
-        // Nếu fail thì fallback sang camera trước
         setConstraints({ facingMode: 'user' });
       });
   }, []);
@@ -33,10 +31,10 @@ export default function ImportDataDialog() {
     if (!detectedCodes.length) return;
 
     try {
-      const raw = detectedCodes[0].rawValue; // QR chứa JSON
+      const raw = detectedCodes[0].rawValue;
       const parsed = JSON.parse(raw);
 
-      // Lưu thay thế hẳn data cũ
+      // Lưu lại đúng storage key
       if (parsed['milk-pump-storage']) {
         localStorage.setItem(
           'milk-pump-storage',
